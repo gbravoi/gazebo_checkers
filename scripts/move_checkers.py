@@ -1,27 +1,32 @@
+#!/usr/bin/env python
 """
 Code contain functions to
 -Set in gazebo board in initial state
 -Keep track of position of checker in gazebo
 ---Move automatically checkers (computer movements)
+---Reset board for a new game
 ---Keep track of position of the checker moved by user? (This may not be needed)
+
+Notes:
+--When user human, keep track here of board, or send it as parameter (requires modify functions)
 """
 import rospy
 import numpy as np
 from gazebo_msgs.msg import LinkStates, LinkState
 from gazebo_msgs.srv import SetLinkState
 from geometry_msgs.msg import Pose, Twist
-
+from gazebo_checkers.msg import CheckersMove #import custom messages
+from gazebo_checkers.srv import ComputerMoveChecker, ComputerMoveCheckerResponse, ResetGame, ResetGameResponse #import custom services
 from scipy.spatial.transform import Rotation as R #to peform rotations
 
 class Board(object):
     def __init__(self):
-        #board properties
+        ##BOARD PROPERTIES
         #origin in center of the board
         self.square_size=0.0325
         self.board_squares_side=8 #board 8x8. number must be even
         self.board_name='board' #name given in sdf file of checkers_game.
         self.board_pose=None #this will be filled by checkers_state_subscriber on the first callback
-
         #checker info
         self.red_name='red_checker' #name given in sdf file of checkers_game. with numbers from 1 to 12
         self.blue_name='blue_checker'
@@ -29,24 +34,31 @@ class Board(object):
         self.blue_n=20 #encoding number that represent a blue checker in board when board described as a matrix
 
 
-        #matrix with board coordinates name, and a dictionary with info about the position of that coordinat ein real world
-        self.coordinates_matrix_name=np.zeros((self.board_squares_side,self.board_squares_side), dtype=object) #to quick access
+        ##INFO TO FILL DURING INITIALIZATION
+        #matrix with board coordinates name, and a dictionary with info about the position of that coordinate. (to fill) 
+        self.coordinates_matrix_name=np.zeros((self.board_squares_side,self.board_squares_side), dtype=object) 
         self.coordinates_dict={}
-
         #values that will obtain from topic "/gazebo/link_states"
         self.blue_checkers_link_names=[]#array to keep all the names of the chekers, completed on the first callback
         self.red_checkers_link_names=[]
+        self.current_board_matrix=[]
 
         
-        ##initialization functions##
+        ##INITIALIZATION FUNCTIONS
         #first wait to get some info of what there is on gazebo
         link_state_message=rospy.wait_for_message("/gazebo/link_states", LinkStates)
-        #process gazebo info
+        #process gazebo info (get board position, name of the checkers objects)
         self.process_gazebo_info(link_state_message)
         #compute coordinates position with respect center of the board
         self.compute_coordinates()
-        #init board on initial position
+        #init board placing checkers on initial position (world frame)
         self.init_board()
+        ##start services
+        #start service that move checker positions (when computer is playing)
+        self.computer_moves_service=rospy.Service('checkers/computer_move/', ComputerMoveChecker, self.handle_computer_moves)
+        #start service to reset the game
+        self.reset_game_service=rospy.Service('checkers/reset_game/', ResetGame, self.handle_reset_game)
+
 
     def set_checkers_position(self,checker_link_name,target_cell_name):
         """
@@ -56,26 +68,32 @@ class Board(object):
         """
 
         target_cell=self.coordinates_dict[target_cell_name] #get cell object 
-        new_link_state=LinkState()
-        new_link_state.link_name=checker_link_name
-        new_link_state.pose=target_cell.get_cell_pose(self.board_pose)# position in real world
-        new_link_state.twist=target_cell.get_cell_twist()
-        new_link_state.reference_frame='world'
-        
-        #use client for set new position
-        rospy.wait_for_service('/gazebo/set_link_state')
-        try:
-            set_state = rospy.ServiceProxy('/gazebo/set_link_state', SetLinkState)
-            resp = set_state( new_link_state )
-            # print("set state worked. position "+target_cell_name)
-            # print(str(new_link_state))
+        #check cell is free
+        if target_cell.checker_name is None:
+            new_link_state=LinkState()
+            new_link_state.link_name=checker_link_name
+            new_link_state.pose=target_cell.get_cell_pose(self.board_pose)# position in real world
+            new_link_state.twist=target_cell.get_cell_twist()
+            new_link_state.reference_frame='world'
+            
+            #use client for set new position
+            rospy.wait_for_service('/gazebo/set_link_state')
+            try:
+                set_state = rospy.ServiceProxy('/gazebo/set_link_state', SetLinkState)
+                resp = set_state( new_link_state )
+                target_cell.checker_name=checker_link_name
+                return resp.success
 
-        except rospy.ServiceException as e:
-            print("Service call failed: %s"%e)
+            except rospy.ServiceException as e:
+                print("Service call failed: %s"%e)
+                return False
+        else:
+            print("there is a checker in goal position "+target_cell_name)
+            return False
 
     def compute_coordinates(self):
         """
-        board coordinates (x,y)=(leter,number)
+        board coordinates (x,y)=(letter,number)
         where a1 is the lower left corner
         """
         letters=['a','b','c','d','e','f','g','h']#add more if board bigger
@@ -141,32 +159,75 @@ class Board(object):
             sum([[0, self.red_n] for _ in range(half_size)], []),
             sum([[self.red_n, 0] for _ in range(half_size)], []),
         ]
-        print(starting_board)
+        #print(starting_board)
+        self.current_board_matrix=starting_board
 
         #place red and blue checkers
         red_checker_counter=0
         blue_checker_counter=0
+        #go trhough all cell in the board
         for i in range(self.board_squares_side):
             for j in range(self.board_squares_side):
+                target_cell_name=self.coordinates_matrix_name[i][j]
                 #red
                 if starting_board[i][j]==self.red_n and red_checker_counter<len(self.red_checkers_link_names): #if we have enought red checkers
-                    target_cell_name=self.coordinates_matrix_name[i][j]
                     checker_link_name=self.red_checkers_link_names[red_checker_counter]
                     #move cher using service
-                    self.set_checkers_position(checker_link_name,target_cell_name)
+                    result=self.set_checkers_position(checker_link_name,target_cell_name)
                     #increase red_checker_counter
                     red_checker_counter+=1
                 #blue
                 elif starting_board[i][j]==self.blue_n and blue_checker_counter<len(self.blue_checkers_link_names): #if we have enought blue checkers
-                    target_cell_name=self.coordinates_matrix_name[i][j]
                     checker_link_name=self.blue_checkers_link_names[blue_checker_counter]
-                    #move cher using service
-                    self.set_checkers_position(checker_link_name,target_cell_name)
+                    #move checker using service
+                    result=self.set_checkers_position(checker_link_name,target_cell_name)
                     #increase blue_checker_counter
                     blue_checker_counter+=1
-                # else:
+                else:
+                    #no checker in this cell
+                    target_cell=self.coordinates_dict[target_cell_name]
+                    target_cell.checker_name=None
                 #     print("no enought pieces in gazebo")
 
+
+    #SERVICES CALLBACKS
+    def handle_computer_moves(self,req):
+        """
+        process request to move a checker by the computer
+        the computer process board as a matrix (8x8 in the example)
+        so the inputs of the service are (from_row,from_col,to_row,to_col)
+        """
+        #get from_cell information
+        from_cell_name=self.coordinates_matrix_name[req.from_row][req.from_col]
+        from_cell=self.coordinates_dict[from_cell_name] #get cell object
+
+        #check if there is a checker in the from cell
+        checker_link_name=from_cell.checker_name
+        if  checker_link_name is not None:
+            #get to_cell information
+            to_cell_name=self.coordinates_matrix_name[req.to_row][req.to_col]
+            #move checker using gazebo service
+            result=self.set_checkers_position(checker_link_name,to_cell_name)
+            #if checker moved, free cell
+            if result:
+                from_cell.checker_name=None
+            return ComputerMoveCheckerResponse(result)
+
+        else:
+            print("there isn't a checker in cell "+from_cell_name)
+            return ComputerMoveCheckerResponse(False)
+
+    def handle_reset_game(self,req):
+        """
+        Service that reset the game
+        (checkers to initial position)
+        """
+        self.init_board()
+        return ResetGameResponse(True)
+
+
+
+           
 
 
 

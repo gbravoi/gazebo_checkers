@@ -36,7 +36,7 @@ class Checkers_Marker(object):
         """
         #board publisher
         name=self.board_name
-        publisher = rospy.Publisher("Marker/Checkers/"+name,Marker,queue_size=1)
+        publisher = rospy.Publisher("checkers/marker/"+name,Marker,queue_size=1)
         self.publishers_dic[name]=publisher
         #create marker and add to dictionary
         self.markers_dic[name]=create_marker("CUBE",self.board_size,[0.5,0.5,0.5])
@@ -45,13 +45,13 @@ class Checkers_Marker(object):
         for i in range(1,13):
             #red
             name=self.red_name+"_"+str(i)
-            publisher = rospy.Publisher("Marker/Checkers/"+name,Marker,queue_size=1)
+            publisher = rospy.Publisher("checkers/marker/"+name,Marker,queue_size=1)
             self.publishers_dic[name]=publisher #add publisher to the dictionary
             self.markers_dic[name]=create_marker("CYLINDER",self.checker_size,[1,0,0]) #add marker to dictionary
             
             #blue
             name=self.blue_name+"_"+str(i)
-            publisher = rospy.Publisher("Marker/Checkers/"+name,Marker,queue_size=1)
+            publisher = rospy.Publisher("checkers/marker/"+name,Marker,queue_size=1)
             self.publishers_dic[name]=publisher
             self.markers_dic[name]=create_marker("CYLINDER",self.checker_size,[0,0,1]) #add marker to dictionary
 

@@ -6,7 +6,32 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
-      Splitter Ratio: 0.5
+        - /board1
+        - /checker_red_11
+        - /checker_red_21
+        - /checker_red_31
+        - /checker_red_41
+        - /checker_red_51
+        - /checker_red_61
+        - /checker_red_71
+        - /checker_red_81
+        - /checker_red_91
+        - /checker_red_101
+        - /checker_red_111
+        - /checker_red_121
+        - /checker_blue_11
+        - /checker_blue_21
+        - /checker_blue_31
+        - /checker_blue_41
+        - /checker_blue_51
+        - /checker_blue_61
+        - /checker_blue_71
+        - /checker_blue_81
+        - /checker_blue_91
+        - /checker_blue_101
+        - /checker_blue_111
+        - /checker_blue_121
+      Splitter Ratio: 0.4989604949951172
     Tree Height: 515
   - Class: rviz/Selection
     Name: Selection
@@ -54,7 +79,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /Marker/Checkers/board
+      Marker Topic: checkers/marker//board
       Name: board
       Namespaces:
         "": true
@@ -62,23 +87,23 @@ Visualization Manager:
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /Marker/Checkers/red_checker_1
+      Marker Topic: checkers/marker/red_checker_1
       Name: checker_red_1
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /Marker/Checkers/red_checker_2
+      Marker Topic: checkers/marker/red_checker_2
       Name: checker_red_2
       Namespaces:
-        "": true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /Marker/Checkers/red_checker_3
+      Marker Topic: checkers/marker/red_checker_3
       Name: checker_red_3
       Namespaces:
         {}
@@ -86,7 +111,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /Marker/Checkers/red_checker_4
+      Marker Topic: checkers/marker/red_checker_4
       Name: checker_red_4
       Namespaces:
         {}
@@ -94,7 +119,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /Marker/Checkers/blue_checker_5
+      Marker Topic: checkers/marker/red_checker_5
       Name: checker_red_5
       Namespaces:
         {}
@@ -102,7 +127,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /Marker/Checkers/red_checker_6
+      Marker Topic: checkers/marker/red_checker_6
       Name: checker_red_6
       Namespaces:
         {}
@@ -110,7 +135,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /Marker/Checkers/red_checker_7
+      Marker Topic: checkers/marker/red_checker_7
       Name: checker_red_7
       Namespaces:
         {}
@@ -118,7 +143,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /Marker/Checkers/red_checker_8
+      Marker Topic: checkers/marker/red_checker_8
       Name: checker_red_8
       Namespaces:
         {}
@@ -126,7 +151,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /Marker/Checkers/red_checker_9
+      Marker Topic: checkers/marker/red_checker_9
       Name: checker_red_9
       Namespaces:
         {}
@@ -134,7 +159,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /Marker/Checkers/red_checker_10
+      Marker Topic: checkers/marker/red_checker_10
       Name: checker_red_10
       Namespaces:
         {}
@@ -142,7 +167,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /Marker/Checkers/red_checker_11
+      Marker Topic: checkers/marker/red_checker_11
       Name: checker_red_11
       Namespaces:
         {}
@@ -150,7 +175,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /Marker/Checkers/red_checker_12
+      Marker Topic: checkers/marker/red_checker_12
       Name: checker_red_12
       Namespaces:
         {}
@@ -158,7 +183,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /Marker/Checkers/blue_checker_1
+      Marker Topic: checkers/marker/blue_checker_1
       Name: checker_blue_1
       Namespaces:
         {}
@@ -166,7 +191,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /Marker/Checkers/blue_checker_2
+      Marker Topic: checkers/marker/blue_checker_2
       Name: checker_blue_2
       Namespaces:
         {}
@@ -174,7 +199,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /Marker/Checkers/blue_checker_3
+      Marker Topic: checkers/marker/blue_checker_3
       Name: checker_blue_3
       Namespaces:
         {}
@@ -182,7 +207,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /Marker/Checkers/blue_checker_4
+      Marker Topic: checkers/marker/blue_checker_4
       Name: checker_blue_4
       Namespaces:
         {}
@@ -190,7 +215,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /Marker/Checkers/blue_checker_5
+      Marker Topic: checkers/marker/blue_checker_5
       Name: checker_blue_5
       Namespaces:
         {}
@@ -198,7 +223,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /Marker/Checkers/blue_checker_6
+      Marker Topic: checkers/marker/blue_checker_6
       Name: checker_blue_6
       Namespaces:
         {}
@@ -206,7 +231,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /Marker/Checkers/blue_checker_7
+      Marker Topic: checkers/marker/blue_checker_7
       Name: checker_blue_7
       Namespaces:
         {}
@@ -214,7 +239,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /Marker/Checkers/blue_checker_8
+      Marker Topic: checkers/marker/blue_checker_8
       Name: checker_blue_8
       Namespaces:
         {}
@@ -222,7 +247,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /Marker/Checkers/blue_checker_9
+      Marker Topic: checkers/marker/blue_checker_9
       Name: checker_blue_9
       Namespaces:
         {}
@@ -230,7 +255,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /Marker/Checkers/blue_checker_10
+      Marker Topic: checkers/marker/blue_checker_10
       Name: checker_blue_10
       Namespaces:
         {}
@@ -238,7 +263,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /Marker/Checkers/blue_checker_11
+      Marker Topic: checkers/marker/blue_checker_11
       Name: checker_blue_11
       Namespaces:
         {}
@@ -246,7 +271,7 @@ Visualization Manager:
       Value: true
     - Class: rviz/Marker
       Enabled: true
-      Marker Topic: /Marker/Checkers/blue_checker_12
+      Marker Topic: checkers/marker/blue_checker_12
       Name: checker_blue_12
       Namespaces:
         {}
@@ -280,7 +305,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 10
+      Distance: 14.80806827545166
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1

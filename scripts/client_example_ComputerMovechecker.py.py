@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 """
 Client example ComputerMovechecker
 test if ComputerMovechecker service works.

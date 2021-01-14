@@ -1,8 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 
 """
 This code creates markers in the position of the elements in gazebo.
 This can be replaced in the duture for information from sensors
+
+note: seems to be slow the refresh rate. how can this be improved?
 """
 import rospy
 from gazebo_msgs.msg import LinkStates
@@ -36,7 +38,7 @@ class Checkers_Marker(object):
         """
         #board publisher
         name=self.board_name
-        publisher = rospy.Publisher("checkers/marker/"+name,Marker,queue_size=1)
+        publisher = rospy.Publisher("checkers/marker/"+name,Marker,queue_size=100)
         self.publishers_dic[name]=publisher
         #create marker and add to dictionary
         self.markers_dic[name]=create_marker("CUBE",self.board_size,[0.5,0.5,0.5])
@@ -76,7 +78,7 @@ class Checkers_Marker(object):
                 #publish
                 publisher=self.publishers_dic[object_name]
                 publisher.publish(marker)
-                print(object_name + "\n\r")
+                # print(object_name + "\n\r")
 
 ##OTHER FUNCTIONS                
 

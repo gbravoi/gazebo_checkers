@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 """
 Code contain functions to
 -Set in gazebo board in initial state

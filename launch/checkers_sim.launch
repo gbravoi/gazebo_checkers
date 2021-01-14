@@ -16,5 +16,11 @@
   <!--launch rviz
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find gazebo_checkers)/rviz/rviz_config.rviz"/>-->
 
+  <!--node that create markers in objects position from gazebo to rviz
+  <node pkg="gazebo_checkers" type="rviz_board_publisher.py" name="rviz_board_publisher" />-->
+
+  <!--node to move pieces on board automatically-->
+  <node pkg="gazebo_checkers" type="move_checkers.py" name="move_checkers" />
+
 
 </launch>

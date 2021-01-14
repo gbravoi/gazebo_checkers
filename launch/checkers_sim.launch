@@ -13,8 +13,8 @@
 
   <!--trick to add fixed frame, in case there is not robot in the world/otherwise comment-->
    <node pkg="tf" type="static_transform_publisher" name="map2frame_0" args="0.0 0.0 0.0 0 0 0 1 map world 100" />
-  <!--launch rviz-->
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find gazebo_checkers)/rviz/rviz_config.rviz"/>
+  <!--launch rviz
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find gazebo_checkers)/rviz/rviz_config.rviz"/>-->
 
 
 </launch>

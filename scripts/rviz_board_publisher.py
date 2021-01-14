@@ -12,10 +12,10 @@ from visualization_msgs.msg import Marker
 
 class Checkers_Marker(object):
     def __init__(self):
-        self.board_name='board'
+        self.board_name='board' #name given in sdf file of checkers_game.
         self.board_size=[0.2921, 0.2921, 0.005] #x,y,z
-        self.red_name='red_checker' #with numbers from 1 to 12
-        self.blue_name='blue_checker'
+        self.red_name='red_checker' #name given in sdf file of checkers_game. with numbers from 1 to 12
+        self.blue_name='blue_checker' #name given in sdf file of checkers_game.
         self.checker_size=[0.0116, 0.0116, 0.025] #x,y,z; where x=y=radious
 
         #dictionary with publishers

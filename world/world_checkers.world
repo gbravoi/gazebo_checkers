@@ -64,7 +64,7 @@
     </model>
 
 
-    <!-- checkers board -->
+    <!-- checkers board-->
     <include>
         <uri>model://checkers_board</uri>
         <pose frame=''>0 0 0 0 0 0</pose>

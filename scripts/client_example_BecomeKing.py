@@ -1,17 +1,17 @@
 #!/usr/bin/env python2
 """
-Client example RemoveChecker
-test if RemoveChecker service works.
+Client example BecomeKing
+test if a checker can be transformed in a king (service test)
 Service provided in move_checkers.py
 """
 
 import rospy
 from gazebo_checkers.srv import AffectChecker #import custom services
 
-def remove_checker_client(from_row,from_col):
-    rospy.wait_for_service('checkers/remove_piece/')
+def become_king_client(from_row,from_col):
+    rospy.wait_for_service('checkers/become_king/')
     try:
-        remove = rospy.ServiceProxy('checkers/remove_piece/', AffectChecker)
+        remove = rospy.ServiceProxy('checkers/become_king/', AffectChecker)
         resp = remove(from_row,from_col)
         return resp.success
     except rospy.ServiceException as e:
@@ -24,4 +24,4 @@ if __name__ == "__main__":
     from_row=0
 
     #use client
-    remove_checker_client(from_row,from_col)
+    become_king_client(from_row,from_col)

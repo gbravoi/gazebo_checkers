@@ -57,7 +57,7 @@ add_message_files(
 add_service_files(
    FILES
    ComputerMoveChecker.srv
-   RemoveChecker.srv
+   AffectChecker.srv
    ResetGame.srv
 )
 

@@ -17,7 +17,7 @@ from gazebo_msgs.msg import ModelStates, ModelState
 from gazebo_msgs.srv import SetModelState, SpawnModel, DeleteModel
 from geometry_msgs.msg import Pose, Twist
 from gazebo_checkers.msg import CheckersMove #import custom messages
-from gazebo_checkers.srv import ComputerMoveChecker, ComputerMoveCheckerResponse, ResetGame, ResetGameResponse, RemoveChecker, RemoveCheckerResponse #import custom services
+from gazebo_checkers.srv import ComputerMoveChecker, ComputerMoveCheckerResponse, ResetGame, ResetGameResponse, AffectChecker, AffectCheckerResponse #import custom services
 from scipy.spatial.transform import Rotation as R #to peform rotations
 
 class Board(object):
@@ -41,6 +41,8 @@ class Board(object):
         self.blue_checkers_model_names=[]#array to keep all the names of the chekers, completed on the first callback
         self.red_checkers_model_names=[]
         self.current_board_matrix=[]
+
+        #VARIABLES TO KEEP TRACK
         self.checkers_in_game=[]#to keep track. This way to know if there are king or deleted checkers in the moment of restart
 
         
@@ -59,8 +61,9 @@ class Board(object):
         #start service to reset the game
         self.reset_game_service=rospy.Service('checkers/reset_game/', ResetGame, self.handle_reset_game)
         #delete a piece
-        self.remove_piece_service=rospy.Service('checkers/remove_piece/', RemoveChecker, self.handle_remove_checker)
-
+        self.remove_piece_service=rospy.Service('checkers/remove_piece/', AffectChecker, self.handle_remove_checker)
+        #change a piece for a king
+        self.become_king_service=rospy.Service('checkers/become_king/', AffectChecker, self.handle_become_king)
     
 
 
@@ -76,7 +79,7 @@ class Board(object):
         #place cherks on initial position
         self.reset_board()
 
-        print(self.checkers_in_game)
+        
 
     def spawn_all_checkers(self):
         """
@@ -150,6 +153,9 @@ class Board(object):
         place pieces in desired position.
         This will only work if pieces are in gazebo.
         """
+        #delete all kings
+        self.delete_all_kings()
+
         #create again pieces that where deleted
         self.spawn_all_checkers()
 
@@ -269,7 +275,26 @@ class Board(object):
                 
 
 
-    
+    def delete_all_kings(self):
+        """
+        function used when restarting the game that delete all kings
+        """
+        #go though the list of active checkers
+        for name in self.checkers_in_game:
+            if 'king' in name:
+                #use client for delete piece
+                rospy.wait_for_service('/gazebo/delete_model')
+                try:
+                    service = rospy.ServiceProxy('/gazebo/delete_model', DeleteModel)
+                    resp = service( name )
+                    if resp.success:
+                        self.checkers_in_game.remove(name)
+                    return resp.success
+
+                except rospy.ServiceException as e:
+                    print("Service call failed: %s"%e)
+                    return False
+
 
 
     #SERVICES CALLBACKS
@@ -319,7 +344,7 @@ class Board(object):
         checker_model_name=from_cell.checker_name
 
         if checker_model_name is not None: #if there is a checker
-            #use client for set new position
+            #use client for delete piece
             rospy.wait_for_service('/gazebo/delete_model')
             try:
                 service = rospy.ServiceProxy('/gazebo/delete_model', DeleteModel)
@@ -336,6 +361,43 @@ class Board(object):
         else:
             print("there is not a checker on that position")
             return False
+
+
+    def handle_become_king(self,req):
+        """
+        delete piece and spawn a king in the same spot
+        """
+        #get from_cell information
+        from_cell=self.coordinates_matrix[req.from_row][req.from_col]
+        #get checker name
+        model_name=from_cell.checker_name
+
+        #delete piece
+        success=self.handle_remove_checker(req)
+        if success:
+            #determine color of the king
+            if 'red' in model_name:
+                xml_name='red_checker_king'
+            else: #else blue
+                xml_name='blue_checker_king'
+            
+            #model name, add king word
+            model_name+='_king'
+
+            #get pose of the cell
+            initial_pose=from_cell.get_cell_pose(self.board_pose)
+            #spawn piece
+            resp=self.spawn_model(xml_name,model_name,initial_pose)
+            #add piece to active list
+            if resp:
+                self.checkers_in_game.append(model_name)
+            return resp
+
+        else:
+            print("there isnt a checker on cell to become king")
+            return False
+
+
 
 
 

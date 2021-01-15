@@ -70,6 +70,8 @@
         <pose frame=''>0 0 0 0 0 0</pose>
     </include>
 
+
+
   </world>
 </sdf>
 

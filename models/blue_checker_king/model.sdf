@@ -1,0 +1,61 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <model name="Blue_Checker_King">
+    <static>false</static>
+    <link name="blue_checker">
+      <pose>0 0 0.0125 0 0 0</pose>
+      <collision name="collision">
+        <geometry>
+            <cylinder>
+              <radius>.0116</radius>
+              <length>.025</length>
+            </cylinder>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <cast_shadows>false</cast_shadows>
+        <geometry>
+            <cylinder>
+              <radius>.0116</radius>
+              <length>.025</length>
+            </cylinder>
+        </geometry>
+        <material>
+        <script>
+            <uri>file://media/materials/scripts/gazebo.material</uri>
+            <name>Gazebo/Blue</name>
+        </script>
+        </material> 
+      </visual>
+      <visual name="visual2">
+      <pose>0 0 0.0125 0 0 0</pose>
+        <cast_shadows>false</cast_shadows>
+        <geometry>
+          <box>
+            <size>.015 0.015 .001</size>
+          </box>
+        </geometry>
+        <material>
+            <script>
+                <uri>model://blue_checker_king/materials/scripts</uri>
+                <uri>model://blue_checker_king/materials/textures</uri>
+                <name>Checkers/Blue_King</name>
+            </script>
+        </material> 
+      </visual>
+     <inertial>
+        <mass>0.021</mass>
+        <inertia> 
+          <ixx>0.000002</ixx>       
+          <ixy>0.0</ixy>         
+          <ixz>0.0</ixz>        
+          <iyy>0.000002</iyy>       
+          <iyz>0.0</iyz>         
+          <izz>0.000002</izz>       
+        </inertia>
+      </inertial>
+    </link>
+  </model>
+
+
+</sdf>

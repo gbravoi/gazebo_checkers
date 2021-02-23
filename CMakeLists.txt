@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   message_generation
+  geometry_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -59,6 +60,7 @@ add_service_files(
    ComputerMoveChecker.srv
    AffectChecker.srv
    ResetGame.srv
+   CellInfo.srv
 )
 
 ## Generate actions in the 'action' folder
@@ -72,6 +74,7 @@ add_service_files(
 generate_messages(
  DEPENDENCIES
    std_msgs  # Or other packages containing msgs
+   geometry_msgs
 )
 
 ################################################
@@ -104,6 +107,7 @@ generate_messages(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
+  CATKIN_DEPENDS message_runtime
 #  INCLUDE_DIRS include
 #  LIBRARIES gazebo_checkers
 #  CATKIN_DEPENDS other_catkin_pkg

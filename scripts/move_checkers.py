@@ -17,7 +17,7 @@ from gazebo_msgs.msg import ModelStates, ModelState
 from gazebo_msgs.srv import SetModelState, SpawnModel, DeleteModel
 from geometry_msgs.msg import Pose, Twist
 from gazebo_checkers.msg import CheckersMove #import custom messages
-from gazebo_checkers.srv import ComputerMoveChecker, ComputerMoveCheckerResponse, ResetGame, ResetGameResponse, AffectChecker, AffectCheckerResponse #import custom services
+from gazebo_checkers.srv import ComputerMoveChecker, ComputerMoveCheckerResponse, ResetGame, ResetGameResponse, AffectChecker, AffectCheckerResponse, CellInfo, CellInfoResponse #import custom services
 from scipy.spatial.transform import Rotation as R #to peform rotations
 
 class Board(object):
@@ -40,10 +40,9 @@ class Board(object):
         self.coordinates_matrix=np.zeros((self.board_squares_side,self.board_squares_side), dtype=object) 
         self.blue_checkers_model_names=[]#array to keep all the names of the chekers, completed on the first callback
         self.red_checkers_model_names=[]
-        self.current_board_matrix=[]
 
         #VARIABLES TO KEEP TRACK
-        self.checkers_in_game=[]#to keep track. This way to know if there are king or deleted checkers in the moment of restart
+        self.checkers_in_game=[]#to keep track of all checker in game. This way to know if there are king or deleted checkers in the moment of restart
 
         
         ##INITIALIZATION FUNCTIONS
@@ -64,6 +63,8 @@ class Board(object):
         self.remove_piece_service=rospy.Service('checkers/remove_piece/', AffectChecker, self.handle_remove_checker)
         #change a piece for a king
         self.become_king_service=rospy.Service('checkers/become_king/', AffectChecker, self.handle_become_king)
+        #Info about a cell by name. position in real world, and if there is a checker in there (bool) 
+        self.cell_info=rospy.Service('checkers/cell_info/', CellInfo, self.handle_cell_info)
     
 
 
@@ -171,8 +172,7 @@ class Board(object):
             sum([[0, self.red_n] for _ in range(half_size)], []),
             sum([[self.red_n, 0] for _ in range(half_size)], []),
         ]
-        #print(starting_board)
-        self.current_board_matrix=starting_board
+
 
         #place red and blue checkers
         red_checker_counter=0
@@ -212,7 +212,7 @@ class Board(object):
         if target_cell.checker_name is None:
             new_model_state=ModelState()
             new_model_state.model_name=checker_model_name
-            new_model_state.pose=target_cell.get_cell_pose(self.board_pose)# position in real world
+            new_model_state.pose=target_cell.cell_pose# position in real world
             new_model_state.twist=target_cell.get_cell_twist()
             new_model_state.reference_frame='world'
             
@@ -233,8 +233,10 @@ class Board(object):
 
     def compute_board_coordinates(self):
         """
-        board coordinates (x,y)=(letter,number)
-        where a1 is the lower left corner
+        Computed during initalization
+        Creates a matrix where the elements are of the class "Cell_info" which stores: 
+        --coordinates of the cell with respect the center of the board (x,y). x horizontal axis, y vertical axis.
+        --the name of the cell, for example "a1" (where a1 is the lower left corner of the board)
         """
         letters=['a','b','c','d','e','f','g','h']#add more if board bigger
         x_0=-1*self.square_size*(self.board_squares_side//2)+ self.square_size/2#position in "a" or "1"
@@ -248,7 +250,7 @@ class Board(object):
             for number in range(self.board_squares_side):
                 name=letter+str(number+1) #+1 since start counting from 1
                 #save info of the cell
-                self.coordinates_matrix[number,i]=Cell_info(name,x,y) 
+                self.coordinates_matrix[number,i]=Cell_info(name,x,y,self.board_pose) 
                 #increase y coordinate
                 y+=self.square_size
 
@@ -263,6 +265,7 @@ class Board(object):
 
     def process_gazebo_info(self,data):
         """
+        Function called during initalization of the board
         -save the board position (asume board will be fixed in that position all the simulation)
         """
         print("initial info from gazebo received")
@@ -272,6 +275,8 @@ class Board(object):
                 model_name=data.name[i]
                 if self.board_name in model_name:#board pose
                     self.board_pose=data.pose[i]
+                    print("board_pose")
+                    print(self.board_pose)
                 
 
 
@@ -320,7 +325,7 @@ class Board(object):
             return ComputerMoveCheckerResponse(result)
 
         else:
-            print("there isn't a checker in cell "+from_cell_name)
+            print("there isn't a checker in cell "+from_cell.cell_name)
             return ComputerMoveCheckerResponse(False)
 
     def handle_reset_game(self,req):
@@ -385,7 +390,7 @@ class Board(object):
             model_name+='_king'
 
             #get pose of the cell
-            initial_pose=from_cell.get_cell_pose(self.board_pose)
+            initial_pose=from_cell.cell_pose
             #spawn piece
             resp=self.spawn_model(xml_name,model_name,initial_pose)
             #add piece to active list
@@ -397,13 +402,18 @@ class Board(object):
             print("there isnt a checker on cell to become king")
             return False
 
+    def handle_cell_info(self,req):
+        """
+        Service that return information about a cell of the board
+        """
+        print("service received")
+        cell=self.coordinates_matrix[req.row][req.col]
 
-
-
-
-
-
-           
+        resp = CellInfoResponse()
+        resp.cell_name=cell.cell_name
+        resp.pose= cell.cell_pose
+        resp.available=(cell.checker_name is None)
+        return resp
 
 
 
@@ -417,14 +427,17 @@ class Cell_info(object):
     cell name.
     (x,y)=distance from the center of the board to the cell
     """
-    def __init__(self,name,x,y):
+    def __init__(self,name,x,y,board_pose):
         self.cell_name=name
         self.x=x
         self.y=y
         self.checker_name=None #different from none is there is a checker in this cell. Save gazebo's model name
         #print(name + " x:"+str(x)+" y:"+str(y)+"\n\r")
+        #compute cell pose (consider fixed since board doesn't move)
+        self.cell_pose=None
+        self.compute_cell_pose(board_pose)
     
-    def get_cell_pose(self,board_pose):
+    def compute_cell_pose(self,board_pose):
         """
         get pose of the cell in world frame
         """
@@ -438,12 +451,14 @@ class Cell_info(object):
         cell_pose.position.x = cell_pos[0]+board_pose.position.x
         cell_pose.position.y = cell_pos[1]+board_pose.position.y
         cell_pose.position.z = cell_pos[2]+board_pose.position.z
-        cell_pose.orientation.x = 0
-        cell_pose.orientation.y = 0
-        cell_pose.orientation.z = 0
-        cell_pose.orientation.w = 1
+        cell_pose.orientation=board_pose.orientation
+        # cell_pose.orientation.x = 0
+        # cell_pose.orientation.y = 0
+        # cell_pose.orientation.z = 0
+        # cell_pose.orientation.w = 1
 
-        return cell_pose
+        self.cell_pose=cell_pose
+
     
     def get_cell_twist(self):
         """

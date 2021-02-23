@@ -20,7 +20,7 @@
   <node pkg="gazebo_checkers" type="rviz_board_publisher.py" name="rviz_board_publisher" />-->
 
   <!--node to move pieces on board automatically-->
-  <node pkg="gazebo_checkers" type="move_checkers.py" name="move_checkers" /> 
 
+  <node pkg="gazebo_checkers" type="move_checkers.py" name="move_checkers" />
 
 </launch>

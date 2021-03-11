@@ -16,7 +16,7 @@ import numpy as np
 from gazebo_msgs.msg import ModelStates, ModelState
 from gazebo_msgs.srv import SetModelState, SpawnModel, DeleteModel
 from geometry_msgs.msg import Pose, Twist
-from gazebo_checkers.msg import CheckersMove #import custom messages
+# from gazebo_checkers.msg import CheckersMove #import custom messages
 from gazebo_checkers.srv import ComputerMoveChecker, ComputerMoveCheckerResponse, ResetGame, ResetGameResponse, AffectChecker, AffectCheckerResponse, CellInfo, CellInfoResponse #import custom services
 from scipy.spatial.transform import Rotation as R #to peform rotations
 
@@ -144,7 +144,7 @@ class Board(object):
             return resp.success
 
         except rospy.ServiceException as e:
-            print("Service call failed: %s"%e)
+            rospy.loginfo("Service call failed: %s"%e)
             return False
 
 
@@ -225,10 +225,10 @@ class Board(object):
                 return resp.success
 
             except rospy.ServiceException as e:
-                print("Service call failed: %s"%e)
+                rospy.loginfo("Service call failed: %s"%e)
                 return False
         else:
-            print("there is a checker in goal position "+target_cell.cell_name)
+            rospy.loginfo("there is a checker in goal position "+target_cell.cell_name)
             return False
 
     def compute_board_coordinates(self):
@@ -268,15 +268,15 @@ class Board(object):
         Function called during initalization of the board
         -save the board position (asume board will be fixed in that position all the simulation)
         """
-        print("initial info from gazebo received")
+        rospy.loginfo("initial info from gazebo received")
         #save the pose of the board in the first callback. This assume the board is fixed and this value wont change
         if self.board_pose is None:
             for i in range(len(data.name)):
                 model_name=data.name[i]
                 if self.board_name in model_name:#board pose
                     self.board_pose=data.pose[i]
-                    print("board_pose")
-                    print(self.board_pose)
+                    # rospy.loginfo("board_pose")
+                    # rospy.loginfo(self.board_pose)
                 
 
 
@@ -297,7 +297,7 @@ class Board(object):
                     return resp.success
 
                 except rospy.ServiceException as e:
-                    print("Service call failed: %s"%e)
+                    rospy.loginfo("Service call failed: %s"%e)
                     return False
 
 
@@ -325,7 +325,7 @@ class Board(object):
             return ComputerMoveCheckerResponse(result)
 
         else:
-            print("there isn't a checker in cell "+from_cell.cell_name)
+            rospy.loginfo("there isn't a checker in cell "+from_cell.cell_name)
             return ComputerMoveCheckerResponse(False)
 
     def handle_reset_game(self,req):
@@ -360,11 +360,11 @@ class Board(object):
                 return resp.success
 
             except rospy.ServiceException as e:
-                print("Service call failed: %s"%e)
+                rospy.loginfo("Service call failed: %s"%e)
                 return False
 
         else:
-            print("there is not a checker on that position")
+            rospy.loginfo("there is not a checker on that position")
             return False
 
 
@@ -399,14 +399,14 @@ class Board(object):
             return resp
 
         else:
-            print("there isnt a checker on cell to become king")
+            rospy.loginfo("there isnt a checker on cell to become king")
             return False
 
     def handle_cell_info(self,req):
         """
         Service that return information about a cell of the board
         """
-        print("service received")
+        rospy.loginfo("service received")
         cell=self.coordinates_matrix[req.row][req.col]
 
         resp = CellInfoResponse()
@@ -432,7 +432,7 @@ class Cell_info(object):
         self.x=x
         self.y=y
         self.checker_name=None #different from none is there is a checker in this cell. Save gazebo's model name
-        #print(name + " x:"+str(x)+" y:"+str(y)+"\n\r")
+        #rospy.loginfo(name + " x:"+str(x)+" y:"+str(y)+"\n\r")
         #compute cell pose (consider fixed since board doesn't move)
         self.cell_pose=None
         self.compute_cell_pose(board_pose)

@@ -26,6 +26,7 @@ class Board(object):
         #origin in center of the board
         self.square_size=0.0325
         self.board_squares_side=8 #board 8x8. number must be even
+        self.board_origin_to_surface=0.003 #distance from origin (reference frame) of board t its surface (z direction)
         self.board_name='Checkers_Board' #name given in sdf file of checkers_game.
         self.board_pose=None #this will be filled by checkers_state_subscriber on the first callback
         #checker info
@@ -277,6 +278,8 @@ class Board(object):
                     self.board_pose=data.pose[i]
                     # rospy.loginfo("board_pose")
                     # rospy.loginfo(self.board_pose)
+            #add in the z direction distance to the surface of the board
+            self.board_pose.position.z+=self.board_origin_to_surface
                 
 
 

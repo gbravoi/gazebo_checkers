@@ -14,7 +14,7 @@ import rospy
 import rospkg
 import numpy as np
 from gazebo_msgs.msg import ModelStates, ModelState
-from gazebo_msgs.srv import SetModelState, SpawnModel, DeleteModel
+from gazebo_msgs.srv import SetModelState, SpawnModel, DeleteModel, GetModelState
 from geometry_msgs.msg import Pose, Twist
 # from gazebo_checkers.msg import CheckersMove #import custom messages
 from gazebo_checkers.srv import ComputerMoveChecker, ComputerMoveCheckerResponse, ResetGame, ResetGameResponse, AffectChecker, AffectCheckerResponse, CellInfo, CellInfoResponse #import custom services
@@ -48,9 +48,7 @@ class Board(object):
         
         ##INITIALIZATION FUNCTIONS
         #first wait to get some info of what there is on gazebo
-        model_state_message=rospy.wait_for_message("/gazebo/model_states", ModelStates)
-        #process gazebo info (get board position)
-        self.process_gazebo_info(model_state_message)
+        self.process_gazebo_info()
         #init board placing checkers on initial position (world frame)
         self.init_board()
 
@@ -89,22 +87,34 @@ class Board(object):
         re-spawn deleted checkers.
         """
         #create chekers
-        for i in range(12):
-            #create a blue checker
-            xml_name='blue_checker'
-            model_name=xml_name+'_'+str(i)
-            if model_name not in self.blue_checkers_model_names:
-                self.blue_checkers_model_names.append(model_name)#save name of the model
-            if model_name not in self.checkers_in_game:#try to spawn only if the checker is missing
-                self.spawn_model(xml_name,model_name)
+        # for i in range(12):
+        #     #create a blue checker
+        #     xml_name='blue_checker'
+        #     model_name=xml_name+'_'+str(i)
+        #     if model_name not in self.blue_checkers_model_names:
+        #         self.blue_checkers_model_names.append(model_name)#save name of the model
+        #     if model_name not in self.checkers_in_game:#try to spawn only if the checker is missing
+        #         self.spawn_model(xml_name,model_name)
 
-            #create a red checker
-            xml_name='red_checker'
-            model_name=xml_name+'_'+str(i)
-            if model_name not in self.red_checkers_model_names:
-                self.red_checkers_model_names.append(model_name)#save name of the model
-            if model_name not in self.checkers_in_game:#try to spawn only if the checker is missing
-                self.spawn_model(xml_name,model_name)
+        #     #create a red checker
+        #     xml_name='red_checker'
+        #     model_name=xml_name+'_'+str(i)
+        #     if model_name not in self.red_checkers_model_names:
+        #         self.red_checkers_model_names.append(model_name)#save name of the model
+        #     if model_name not in self.checkers_in_game:#try to spawn only if the checker is missing
+        #         self.spawn_model(xml_name,model_name)
+
+        #create chekers, only 1 blue for debug
+        i=1
+        #create a blue checker
+        xml_name='blue_checker'
+        model_name='blue_demo'
+        if model_name not in self.blue_checkers_model_names:
+            self.blue_checkers_model_names.append(model_name)#save name of the model
+        if model_name not in self.checkers_in_game:#try to spawn only if the checker is missing
+            self.spawn_model(xml_name,model_name)
+
+
 
 
     def spawn_model(self,xml_name,model_name,initial_pose=None):
@@ -175,30 +185,39 @@ class Board(object):
         ]
 
 
-        #place red and blue checkers
-        red_checker_counter=0
-        blue_checker_counter=0
-        #go trhough all cell in the board
-        for i in range(self.board_squares_side):
-            for j in range(self.board_squares_side):
-                target_cell=self.coordinates_matrix[i][j]
-                #red
-                if starting_board[i][j]==self.red_n and red_checker_counter<len(self.red_checkers_model_names): #if we have enought red checkers
-                    checker_model_name=self.red_checkers_model_names[red_checker_counter]
-                    #move cher using service
-                    result=self.set_checkers_position(checker_model_name,target_cell)
-                    #increase red_checker_counter
-                    red_checker_counter+=1
-                #blue
-                elif starting_board[i][j]==self.blue_n and blue_checker_counter<len(self.blue_checkers_model_names): #if we have enought blue checkers
-                    checker_model_name=self.blue_checkers_model_names[blue_checker_counter]
-                    #move checker using service
-                    result=self.set_checkers_position(checker_model_name,target_cell)
-                    #increase blue_checker_counter
-                    blue_checker_counter+=1
-                else:
-                    #no checker in this cell
-                    target_cell.checker_name=None
+        # #place red and blue checkers
+        # red_checker_counter=0
+        # blue_checker_counter=0
+        # #go trhough all cell in the board
+        # for i in range(self.board_squares_side):
+        #     for j in range(self.board_squares_side):
+        #         target_cell=self.coordinates_matrix[i][j]
+        #         #red
+        #         if starting_board[i][j]==self.red_n and red_checker_counter<len(self.red_checkers_model_names): #if we have enought red checkers
+        #             checker_model_name=self.red_checkers_model_names[red_checker_counter]
+        #             #move cher using service
+        #             result=self.set_checkers_position(checker_model_name,target_cell)
+        #             #increase red_checker_counter
+        #             red_checker_counter+=1
+        #         #blue
+        #         elif starting_board[i][j]==self.blue_n and blue_checker_counter<len(self.blue_checkers_model_names): #if we have enought blue checkers
+        #             checker_model_name=self.blue_checkers_model_names[blue_checker_counter]
+        #             #move checker using service
+        #             result=self.set_checkers_position(checker_model_name,target_cell)
+        #             #increase blue_checker_counter
+        #             blue_checker_counter+=1
+        #         else:
+        #             #no checker in this cell
+        #             target_cell.checker_name=None
+
+        #place only blue one for debuggingchecker_model_name=self.blue_checkers_model_names[blue_checker_counter]
+        #move checker using 
+        checker_model_name=self.blue_checkers_model_names[0]
+        target_cell=self.coordinates_matrix[0][3]#d8
+        print("target_cell")
+        print(target_cell)
+        result=self.set_checkers_position(checker_model_name,target_cell)
+
 
 
 
@@ -264,23 +283,35 @@ class Board(object):
 
 
 
-    def process_gazebo_info(self,data):
+    def process_gazebo_info(self):
         """
         Function called during initalization of the board
         -save the board position (asume board will be fixed in that position all the simulation)
         """
+        rospy.wait_for_service('gazebo/get_model_state/')
         rospy.loginfo("initial info from gazebo received")
-        #save the pose of the board in the first callback. This assume the board is fixed and this value wont change
-        if self.board_pose is None:
-            for i in range(len(data.name)):
-                model_name=data.name[i]
-                if self.board_name in model_name:#board pose
-                    self.board_pose=data.pose[i]
-                    # rospy.loginfo("board_pose")
-                    # rospy.loginfo(self.board_pose)
+        try:
+            service = rospy.ServiceProxy('gazebo/get_model_state/', GetModelState)
+            resp = service(self.board_name,"world")
+            self.board_pose=resp.pose
             #add in the z direction distance to the surface of the board
             self.board_pose.position.z+=self.board_origin_to_surface
-                
+            return resp.success
+        except rospy.ServiceException as e:
+            print("Service call failed: %s"%e)
+
+    def get_checker_gazebo_pose(self,checker_name):
+        """
+        get posiiton of the checker in gazebo respect to the world
+        """
+        rospy.wait_for_service('gazebo/get_model_state/')
+        rospy.loginfo("initial info from gazebo received")
+        try:
+            service = rospy.ServiceProxy('gazebo/get_model_state/', GetModelState)
+            resp = service(checker_name,"world")
+            return resp.pose
+        except rospy.ServiceException as e:
+            print("Service call failed: %s"%e)            
 
 
     def delete_all_kings(self):
@@ -414,8 +445,12 @@ class Board(object):
 
         resp = CellInfoResponse()
         resp.cell_name=cell.cell_name
-        resp.pose= cell.cell_pose
+        resp.pose_cell= cell.cell_pose
         resp.available=(cell.checker_name is None)
+
+        if not resp.available: #compute checker position on gazebo
+            resp.pose_checker=self.get_checker_gazebo_pose(cell.checker_name)
+
         return resp
 
 

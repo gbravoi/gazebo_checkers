@@ -3,19 +3,19 @@
   <model name="Blue_Checker">
     <static>false</static>
     <link name="blue_checker">
-      <pose>0 0 0.0125 0 0 0</pose>
+      <pose>0 0 0.015 0 0 0</pose>
       <collision name="collision">
         <geometry>
             <cylinder>
-              <radius>.0116</radius>
-              <length>.025</length>
+              <radius>.02</radius>
+              <length>.03</length>
             </cylinder>
         </geometry>
         <surface>
         <friction>
           <ode>
-            <mu>0.01</mu>
-            <mu2>0.01</mu2>
+            <mu>0.8</mu>
+            <mu2>0.8</mu2>
           </ode>
         </friction>
       </surface>
@@ -24,8 +24,8 @@
         <cast_shadows>false</cast_shadows>
         <geometry>
             <cylinder>
-              <radius>.0116</radius>
-              <length>.025</length>
+              <radius>.02</radius>
+              <length>.03</length>
             </cylinder>
         </geometry>
         <material>

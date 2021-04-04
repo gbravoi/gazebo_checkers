@@ -10,15 +10,29 @@
               <radius>.02</radius>
               <length>.04</length>
             </cylinder>
+            <!-- <box>
+              <size>0.04 0.04 0.04</size>
+            </box> -->
         </geometry>
         <surface>
-        <friction>
-          <ode>
-            <mu>10000.0</mu>
-            <mu2>10000.0</mu2>
-          </ode>
-        </friction>
-      </surface>
+          <friction>
+            <ode>
+              <mu>1.0</mu>
+              <mu2>1.0</mu2>
+            </ode>
+            <torsional>
+                <coefficient>1.0</coefficient>
+                <surface_radius>50</surface_radius>
+                <use_patch_radius>false</use_patch_radius>
+            </torsional>
+          </friction>
+          <contact>
+            <ode>
+              <!--max_vel>0</max_vel-->
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+        </surface>
       </collision>
       <visual name="visual">
         <cast_shadows>false</cast_shadows>
@@ -27,6 +41,9 @@
               <radius>.02</radius>
               <length>.04</length>
             </cylinder>
+            <!-- <box>
+              <size>0.04 0.04 0.04</size>
+            </box> -->
         </geometry>
         <material>
         <script>
@@ -36,7 +53,7 @@
         </material> 
       </visual>
      <inertial>
-        <mass>0.005</mass>
+        <mass>0.021</mass>
         <inertia> 
           <ixx>0.000002</ixx>       
           <ixy>0.0</ixy>         

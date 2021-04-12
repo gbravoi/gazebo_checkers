@@ -15,6 +15,8 @@ This node is in encharge of
 2. Put the checkers in initial position
 3. Allow interaction with the checkers trogh services
 
+Note: this node is also a python package in catking_workspace, this mean its funcitons can be used in other python file (required import it)
+
 The checker board is represented as a matrix where the rows are equibalent to the "y" direction (numbers) and the columns to the "x" direction (letters). Where the top right elements of the board match the top right elements of the matrix.
 
 Each element of the matrix is a "Cell_info" objects that stores information about the position of the board's cell with respect the world frame and if there is a checker in that cell

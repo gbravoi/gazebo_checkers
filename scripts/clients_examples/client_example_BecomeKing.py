@@ -20,7 +20,7 @@ def become_king_client(from_row,from_col):
 
 if __name__ == "__main__":
     #create move (using matrix coordinates)
-    from_col=1
+    from_col=3
     from_row=0
 
     #use client

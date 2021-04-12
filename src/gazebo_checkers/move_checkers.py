@@ -21,7 +21,7 @@ from gazebo_checkers.srv import ComputerMoveChecker, ComputerMoveCheckerResponse
 from scipy.spatial.transform import Rotation as R #to peform rotations
 
 class Board(object):
-    def __init__(self,square_size_mm,board_squares_side,board_origin_to_surface,empty,light,dark,light_king,dark_king,initial_board=None):
+    def __init__(self,square_size_mm,board_squares_side,board_origin_to_surface,empty,red,blue,red_king,blue_king,initial_board=None):
         ##BOARD PROPERTIES
         #origin in center of the board
         self.square_size=square_size_mm
@@ -30,29 +30,30 @@ class Board(object):
         self.board_name='Checkers_Board' #name given in sdf file of checkers_game.
         self.board_pose=None #this will be filled by checkers_state_subscriber on the first callback
         #checker info
-        self.light_name='light_checker' #name given in sdf file of checkers_game. with numbers from 1 to 12
-        self.light_xml='red_checker'
-        self.light_king_xml='red_checker_king'
-        self.dark_name='blue_checker'
-        self.dark_xml='blue_checker'
-        self.dark_king_xml='blue_checker_king'
+        self.red_name='red_checker' #name given in sdf file of checkers_game. with numbers from 1 to 12
+        self.red_xml='red_checker' 
+        self.red_king_xml='red_checker_king'
+        self.blue_name='blue_checker'
+        self.blue_xml='blue_checker'
+        self.blue_king_xml='blue_checker_king'
+        self.red_n=10 #encoding number that represent a red checker in board when board described as a matrix
+        self.blue_n=20 #encoding number that represent a blue checker in board when board described as a matrix
 
         #id to constructr matrix that represent position of different things. Used to comunicate with other checker programs
-        self.empty=empty
-        self.light=light
-        self.dark=dark
-        self.light_king=light_king
-        self.dark_king =dark_king
-
+        self.empty_n=empty
+        self.red_n=red
+        self.blue_n=blue
+        self.red_king_n=red_king
+        self.blue_king_n =blue_king
 
         ##INFO TO FILL DURING INITIALIZATION
         #detect if is debuf mode
         # Robot limits
         self.debug_mode = rospy.get_param("~debug", False)    # Debug model will load only one checker. Parameter passed in the launch file
         #matrix with cell objects. cell objects store info like position in real world and checker in it
-        self.board_as_object_matrix=np.zeros((self.board_squares_side,self.board_squares_side), dtype=object) 
-        self.dark_checkers_model_names=[]#array to keep all the names of the chekers, completed on the first callback
-        self.light_checkers_model_names=[]
+        self.coordinates_matrix=np.zeros((self.board_squares_side,self.board_squares_side), dtype=object) 
+        self.blue_checkers_model_names=[]#array to keep all the names of the chekers, completed on the first callback
+        self.red_checkers_model_names=[]
 
         #VARIABLES TO KEEP TRACK
         self.checkers_in_game=[]#to keep track of all checker in game. This way to know if there are king or deleted checkers in the moment of restart
@@ -98,30 +99,30 @@ class Board(object):
         spawn 12 checkers per side.
         re-spawn deleted checkers.
         """
-        #create chekers, only 1 dark for debug
+        #create chekers, only 1 blue for debug
         if self.debug_mode:
             i=1
-            #create a dark checker
-            model_name='dark_demo'
-            if model_name not in self.dark_checkers_model_names:
-                self.dark_checkers_model_names.append(model_name)#save name of the model
+            #create a blue checker
+            model_name='blue_demo'
+            if model_name not in self.blue_checkers_model_names:
+                self.blue_checkers_model_names.append(model_name)#save name of the model
             if model_name not in self.checkers_in_game:#try to spawn only if the checker is missing
-                self.spawn_model(self.dark_xml,model_name)
+                self.spawn_model(self.blue_xml,model_name)
         else: #else, cretae all 12 checkers
             for i in range(12):
-                #create a dark checker
-                model_name=self.dark_xml+'_'+str(i)
-                if model_name not in self.dark_checkers_model_names:
-                    self.dark_checkers_model_names.append(model_name)#save name of the model
+                #create a blue checker
+                model_name=self.blue_xml+'_'+str(i)
+                if model_name not in self.blue_checkers_model_names:
+                    self.blue_checkers_model_names.append(model_name)#save name of the model
                 if model_name not in self.checkers_in_game:#try to spawn only if the checker is missing
-                    self.spawn_model(self.dark_xml,model_name)
+                    self.spawn_model(self.blue_xml,model_name)
 
-                #create a light checker
-                model_name=self.light_xml+'_'+str(i)
-                if model_name not in self.light_checkers_model_names:
-                    self.light_checkers_model_names.append(model_name)#save name of the model
+                #create a red checker
+                model_name=self.red_xml+'_'+str(i)
+                if model_name not in self.red_checkers_model_names:
+                    self.red_checkers_model_names.append(model_name)#save name of the model
                 if model_name not in self.checkers_in_game:#try to spawn only if the checker is missing
-                    self.spawn_model(self.light_xml,model_name)
+                    self.spawn_model(self.red_xml,model_name)
 
 
 
@@ -180,77 +181,76 @@ class Board(object):
         #create again pieces that where deleted
         self.spawn_all_checkers()
 
-        #matrix of initial board positions. where 10 is light, 20 is dark
+        #matrix of initial board positions.
         half_size=self.board_squares_side//2
         starting_board=None
 
         if initial_board is None:
             starting_board = [
-                sum([[self.empty, self.dark] for _ in range(half_size)], []),
-                sum([[self.dark, self.empty] for _ in range(half_size)], []),
-                sum([[self.empty,self.dark] for _ in range(half_size)], []),
-                sum([[self.empty] for _ in range(self.board_squares_side)], []),
-                sum([[self.empty] for _ in range(self.board_squares_side)], []),
-                sum([[self.light, self.empty] for _ in range(half_size)], []),
-                sum([[self.empty, self.light] for _ in range(half_size)], []),
-                sum([[self.light, self.empty] for _ in range(half_size)], []),
+                sum([[self.empty_n, self.blue_n] for _ in range(half_size)], []),
+                sum([[self.blue_n, self.empty_n] for _ in range(half_size)], []),
+                sum([[self.empty_n,self.blue_n] for _ in range(half_size)], []),
+                sum([[self.empty_n] for _ in range(self.board_squares_side)], []),
+                sum([[self.empty_n] for _ in range(self.board_squares_side)], []),
+                sum([[self.red_n, self.empty_n] for _ in range(half_size)], []),
+                sum([[self.empty_n, self.red_n] for _ in range(half_size)], []),
+                sum([[self.red_n, self.empty_n] for _ in range(half_size)], []),
             ]
         else:
             starting_board=initial_board
 
 
+      
         if self.debug_mode:
-            #place only dark one for debuggingchecker_model_name=self.dark_checkers_model_names[dark_checker_counter]
+            #place only blue one for debuggingchecker_model_name=self.blue_checkers_model_names[blue_checker_counter]
             #move checker using 
-            checker_model_name=self.dark_checkers_model_names[0]
-            target_cell=self.board_as_object_matrix[0][3]#d8
+            checker_model_name=self.blue_checkers_model_names[0]
+            target_cell=self.coordinates_matrix[0][3]#d8
             print("target_cell")
             print(target_cell)
             result=self.set_checkers_position(checker_model_name,target_cell)
         else:
-            #place light and dark checkers
-            light_checker_counter=0
-            dark_checker_counter=0
+            red_checker_counter=0
+            blue_checker_counter=0
             #go trhough all cell in the board
             for i in range(self.board_squares_side):
                 for j in range(self.board_squares_side):
-                    target_cell=self.board_as_object_matrix[i][j]
-                    #light
-                    if starting_board[i][j]==self.light and light_checker_counter<len(self.light_checkers_model_names): #if we have enought light checkers
-                        checker_model_name=self.light_checkers_model_names[light_checker_counter]
+                    target_cell=self.coordinates_matrix[i][j]
+                    #red
+                    if starting_board[i][j]==self.red_n and red_checker_counter<len(self.red_checkers_model_names): #if we have enought red checkers
+                        checker_model_name=self.red_checkers_model_names[red_checker_counter]
                         #move cher using service
                         result=self.set_checkers_position(checker_model_name,target_cell)
-                        #increase light_checker_counter
-                        light_checker_counter+=1
-                    #dark
-                    elif starting_board[i][j]==self.dark and dark_checker_counter<len(self.dark_checkers_model_names): #if we have enought dark checkers
-                        checker_model_name=self.dark_checkers_model_names[dark_checker_counter]
+                        #increase red_checker_counter
+                        red_checker_counter+=1
+                    #blue
+                    elif starting_board[i][j]==self.blue_n and blue_checker_counter<len(self.blue_checkers_model_names): #if we have enought blue checkers
+                        checker_model_name=self.blue_checkers_model_names[blue_checker_counter]
                         #move checker using service
                         result=self.set_checkers_position(checker_model_name,target_cell)
-                        #increase dark_checker_counter
-                        dark_checker_counter+=1
-                    #light king
-                    if starting_board[i][j]==self.light_king and light_checker_counter<len(self.light_checkers_model_names): #if we have enought light checkers
-                        checker_model_name=self.light_checkers_model_names[light_checker_counter]
-                        #move checker using service
-                        result=self.set_checkers_position(checker_model_name,target_cell)
-                        #transform in king
-                        result=self.gazebo_spawn_king(checker_model_name,target_cell)
-                        #increase light_checker_counter
-                        light_checker_counter+=1
-                    #dark king
-                    if starting_board[i][j]==self.dark_king and dark_checker_counter<len(self.dark_checkers_model_names): #if we have enought light checkers
-                        checker_model_name=self.dark_checkers_model_names[dark_checker_counter]
+                        #increase blue_checker_counter
+                        blue_checker_counter+=1
+                                        #red king
+                    elif starting_board[i][j]==self.red_king_n and red_checker_counter<len(self.red_checkers_model_names): #if we have enought red checkers
+                        checker_model_name=self.red_checkers_model_names[red_checker_counter]
                         #move checker using service
                         result=self.set_checkers_position(checker_model_name,target_cell)
                         #transform in king
                         result=self.gazebo_spawn_king(checker_model_name,target_cell)
-                        #increase dark_checker_counter
-                        dark_checker_counter+=1
+                        #increase red_checker_counter
+                        red_checker_counter+=1
+                    #blue king
+                    elif starting_board[i][j]==self.blue_king_n and blue_checker_counter<len(self.blue_checkers_model_names): #if we have enought red checkers
+                        checker_model_name=self.blue_checkers_model_names[blue_checker_counter]
+                        #move checker using service
+                        result=self.set_checkers_position(checker_model_name,target_cell)
+                        #transform in king
+                        result=self.gazebo_spawn_king(checker_model_name,target_cell)
+                        #increase blue_checker_counter
+                        blue_checker_counter+=1
                     else:
                         #no checker in this cell
                         target_cell.checker_name=None
-
 
 
 
@@ -303,7 +303,7 @@ class Board(object):
             for number in range(self.board_squares_side):
                 name=letter+str(number+1) #+1 since start counting from 1
                 #save info of the cell
-                self.board_as_object_matrix[number,i]=Cell_info(name,x,y,self.board_pose) 
+                self.coordinates_matrix[number,i]=Cell_info(name,x,y,self.board_pose) 
                 #increase y coordinate
                 y+=self.square_size
 
@@ -312,7 +312,7 @@ class Board(object):
             y=x_0
         
         #to matrix look like real life need to be flipped
-        self.board_as_object_matrix=np.flip(self.board_as_object_matrix,0)
+        self.coordinates_matrix=np.flip(self.coordinates_matrix,0)
 
 
 
@@ -377,13 +377,13 @@ class Board(object):
         so the inputs of the service are (from_row,from_col,to_row,to_col)
         """
         #get from_cell information
-        from_cell=self.board_as_object_matrix[req.from_row][req.from_col]
+        from_cell=self.coordinates_matrix[req.from_row][req.from_col]
 
         #check if there is a checker in the from cell
         checker_model_name=from_cell.checker_name
         if  checker_model_name is not None:
             #get to_cell information
-            to_cell=self.board_as_object_matrix[req.to_row][req.to_col]
+            to_cell=self.coordinates_matrix[req.to_row][req.to_col]
             #move checker using gazebo service
             result=self.set_checkers_position(checker_model_name,to_cell)
             #if checker moved, free cell
@@ -410,12 +410,12 @@ class Board(object):
         (make it desapear)
         """
         #get from_cell information
-        from_cell=self.board_as_object_matrix[req.from_row][req.from_col]
+        from_cell=self.coordinates_matrix[req.from_row][req.from_col]
 
         #get checker name
         checker_model_name=from_cell.checker_name
 
-        self.gazebo_delete_checker(checker_model_name,from_cell)
+        return self.gazebo_delete_checker(checker_model_name,from_cell)
 
 
 
@@ -449,11 +449,11 @@ class Board(object):
         delete piece and spawn a king in the same spot
         """
         #get from_cell information
-        from_cell=self.board_as_object_matrix[req.from_row][req.from_col]
+        from_cell=self.coordinates_matrix[req.from_row][req.from_col]
         #get checker name
         model_name=from_cell.checker_name
 
-        self.gazebo_spawn_king(model_name,from_cell)
+        return self.gazebo_spawn_king(model_name,from_cell)
         
 
     def gazebo_spawn_king(self,model_name,from_cell):
@@ -464,10 +464,10 @@ class Board(object):
         success=self.gazebo_delete_checker(model_name,from_cell)
         if success:
             #determine color of the king
-            if 'red' or 'light' in model_name:
-                xml_name=self.light_king_xml
-            else: #else dark
-                xml_name=self.dark_king_xml
+            if 'red' in model_name:
+                xml_name=self.red_king_xml
+            else: #else blue
+                xml_name=self.blue_king_xml
             
             #model name, add king word
             model_name+='_king'
@@ -484,13 +484,12 @@ class Board(object):
         else:
             rospy.loginfo("there isnt a checker on cell to become king")
             return False
-
     def handle_cell_info(self,req):
         """
         Service that return information about a cell of the board
         """
         rospy.loginfo("service received")
-        cell=self.board_as_object_matrix[req.row][req.col]
+        cell=self.coordinates_matrix[req.row][req.col]
 
         resp = CellInfoResponse()
         resp.cell_name=cell.cell_name
@@ -575,12 +574,12 @@ if __name__ == '__main__':
     
     #numbers to represent board as a numerical matrix
     empty=0
-    light=1
-    dark=2
-    light_king=3
-    dark_king =4
+    red=1
+    blue=2
+    red_king=3
+    blue_king =4
 
-    board=Board(square_size_mm,board_squares_side,board_origin_to_surface,empty,light,dark,light_king,dark_king)
+    board=Board(square_size_mm,board_squares_side,board_origin_to_surface,empty,red,blue,red_king,blue_king)
 
     # spin() simply keeps python from exiting until this node is stopped
     rospy.spin()

@@ -484,22 +484,29 @@ class Board(object):
         else:
             rospy.loginfo("there isnt a checker on cell to become king")
             return False
+
+
     def handle_cell_info(self,req):
         """
         Service that return information about a cell of the board
         """
         rospy.loginfo("service received")
-        cell=self.coordinates_matrix[req.row][req.col]
+        row=req.row
+        col=req.col
+        cell=self.coordinates_matrix[row][col]
 
         resp = CellInfoResponse()
         resp.cell_name=cell.cell_name
         resp.pose_cell= cell.cell_pose
         resp.available=(cell.checker_name is None)
+        resp.pose_checker=None
 
         if not resp.available: #compute checker position on gazebo
             resp.pose_checker=self.get_checker_gazebo_pose(cell.checker_name)
 
         return resp
+
+
 
 
 

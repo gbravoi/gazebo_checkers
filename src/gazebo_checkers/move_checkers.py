@@ -568,25 +568,48 @@ class Cell_info(object):
         return cell_twist
 
 
+def board_from_txt(txt_name,package_name):
+    """
+    Load txt and trsnaform it in a matrix
+    txt should be inside the package in the folder initial_boards:
+    example "[package_name]/initial_boards"
+    """
+    rospack = rospkg.RosPack()
+    package_path=rospack.get_path(package_name)
+    file_path=package_path+"/initial_boards/"+txt_name
+    board= np.loadtxt(file_path, dtype=int)
+    print("loaded board")
+    print(board)
+    return board
+
 
         
 if __name__ == '__main__':
     #create node
     rospy.init_node('move_checkers', anonymous=True)
 
+
     #create board object
-    square_size_mm=0.0325
-    board_squares_side=8 #board 8x8. number must be even
-    board_origin_to_surface=0.003 #distance from origin (reference frame) of board t its surface (z direction)
-    
-    #numbers to represent board as a numerical matrix
+    square_size_mm=rospy.get_param("~board_square_size_mm", 0.0325)
+    board_squares_side=rospy.get_param("~board_squares_x_side", 8) #board 8x8. number must be even
+    board_origin_to_surface=rospy.get_param("~board_origin_to_surface_mm", 0.003)  #distance from origin (reference frame) of board t its surface (z direction)
+    initial_board_txt=rospy.get_param("~initial_board_txt",None)
+    initial_board_package_location=rospy.get_param("~initial_board_package_location","gazebo_checkers")
+    #numbers to represent board as a numerical matrix. keep this numbers. do not change
     empty=0
     red=1
     blue=2
     red_king=3
     blue_king =4
 
-    board=Board(square_size_mm,board_squares_side,board_origin_to_surface,empty,red,blue,red_king,blue_king)
+    #Load initial board from txt
+    initial_board=None
+    if initial_board_txt is not None:
+        initial_board=board_from_txt(initial_board_txt,initial_board_package_location)
+
+        
+
+    board=Board(square_size_mm,board_squares_side,board_origin_to_surface,empty,red,blue,red_king,blue_king,initial_board)
 
     # spin() simply keeps python from exiting until this node is stopped
     rospy.spin()

@@ -585,14 +585,15 @@ def board_from_txt(txt_name,package_name):
 
         
 if __name__ == '__main__':
+    #if this python file is run, will create a server that controls gazebo
     #create node
     rospy.init_node('move_checkers', anonymous=True)
 
 
     #create board object
-    square_size_mm=rospy.get_param("~board_square_size_mm", 0.0325)
-    board_squares_side=rospy.get_param("~board_squares_x_side", 8) #board 8x8. number must be even
-    board_origin_to_surface=rospy.get_param("~board_origin_to_surface_mm", 0.003)  #distance from origin (reference frame) of board t its surface (z direction)
+    square_size_mm=float(rospy.get_param("~board_square_size_mm", 0.0325))
+    board_squares_side=int(rospy.get_param("~board_squares_x_side", 8)) #board 8x8. number must be even
+    board_origin_to_surface=float(rospy.get_param("~board_origin_to_surface_mm", 0.003) ) #distance from origin (reference frame) of board t its surface (z direction)
     initial_board_txt=rospy.get_param("~initial_board_txt",None)
     initial_board_package_location=rospy.get_param("~initial_board_package_location","gazebo_checkers")
     #numbers to represent board as a numerical matrix. keep this numbers. do not change

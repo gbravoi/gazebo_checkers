@@ -36,9 +36,7 @@ class Board(object):
         self.blue_name='blue_checker'
         self.blue_xml='blue_checker'
         self.blue_king_xml='blue_checker_king'
-        self.red_n=10 #encoding number that represent a red checker in board when board described as a matrix
-        self.blue_n=20 #encoding number that represent a blue checker in board when board described as a matrix
-
+      
         #id to constructr matrix that represent position of different things. Used to comunicate with other checker programs
         self.empty_n=empty
         self.red_n=red
@@ -94,7 +92,7 @@ class Board(object):
 
         
 
-    def spawn_all_checkers(self):
+    def spawn_all_checkers(self,red=12,blue=12):
         """
         spawn 12 checkers per side.
         re-spawn deleted checkers.
@@ -108,15 +106,16 @@ class Board(object):
                 self.blue_checkers_model_names.append(model_name)#save name of the model
             if model_name not in self.checkers_in_game:#try to spawn only if the checker is missing
                 self.spawn_model(self.blue_xml,model_name)
-        else: #else, cretae all 12 checkers
-            for i in range(12):
+        else: #else, cretae all checkers
+            for i in range(blue):#blue
                 #create a blue checker
                 model_name=self.blue_xml+'_'+str(i)
                 if model_name not in self.blue_checkers_model_names:
                     self.blue_checkers_model_names.append(model_name)#save name of the model
                 if model_name not in self.checkers_in_game:#try to spawn only if the checker is missing
                     self.spawn_model(self.blue_xml,model_name)
-
+            
+            for i in range(red):#RED
                 #create a red checker
                 model_name=self.red_xml+'_'+str(i)
                 if model_name not in self.red_checkers_model_names:
@@ -179,7 +178,17 @@ class Board(object):
         self.delete_all_kings()
 
         #create again pieces that where deleted
-        self.spawn_all_checkers()
+        #determine pieces per player in the initial board
+        if initial_board is None:
+            red=12
+            blue=12
+            
+        else:
+            inital_board_flat=list(np.concatenate(initial_board).flat)
+            red=inital_board_flat.count(self.red_n)+inital_board_flat.count(self.red_king_n)
+            blue=inital_board_flat.count(self.blue_n)+inital_board_flat.count(self.blue_king_n)
+
+        self.spawn_all_checkers(red,blue)
 
         #matrix of initial board positions.
         half_size=self.board_squares_side//2
@@ -596,7 +605,7 @@ if __name__ == '__main__':
     board_origin_to_surface=float(rospy.get_param("~board_origin_to_surface_mm", 0.003) ) #distance from origin (reference frame) of board t its surface (z direction)
     initial_board_txt=rospy.get_param("~initial_board_txt",None)
     initial_board_package_location=rospy.get_param("~initial_board_package_location","gazebo_checkers")
-    #numbers to represent board as a numerical matrix. keep this numbers. do not change
+    #numbers to represent board as a numerical matrix. keep this numbers. do not change. coincident with Constants in checker_probabilites/base.py
     empty=0
     red=1
     blue=2

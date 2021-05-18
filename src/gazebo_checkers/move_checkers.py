@@ -509,10 +509,11 @@ class Board(object):
         resp.pose_cell= cell.cell_pose
         resp.available=(cell.checker_name is None)
         resp.pose_checker=None
+        resp.checker_name=None
 
         if not resp.available: #compute checker position on gazebo
             resp.pose_checker=self.get_checker_gazebo_pose(cell.checker_name)
-
+            resp.checker_name=cell.checker_name
         return resp
 
 

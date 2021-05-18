@@ -21,9 +21,6 @@ def cell_info_client(from_row,from_col):
         cell_info = rospy.ServiceProxy('checkers/cell_info/', CellInfo)
         resp = cell_info(from_row,from_col)
         print("Cell "+ resp.cell_name+ " Pose:")
-        print(resp.pose)
-        print("Available? ")
-        print(resp.available)
         return resp
     except rospy.ServiceException as e:
         print("Service call failed: %s"%e)

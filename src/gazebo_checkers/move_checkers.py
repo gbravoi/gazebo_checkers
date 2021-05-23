@@ -404,6 +404,37 @@ class Board(object):
             rospy.loginfo("there isn't a checker in cell "+from_cell.cell_name)
             return ComputerMoveCheckerResponse(False)
 
+    def handle_human_moves(self,req):
+        """
+        Supossing the human moved a checker piece and place it in the desired position
+        we need to tell about this change to the board representation
+        """
+        #get from_cell information
+        from_cell=self.coordinates_matrix[req.from_row][req.from_col]
+        #check if there is a checker in the from cell
+        checker_model_name=from_cell.checker_name
+        if  checker_model_name is not None:
+            #get to_cell information
+            to_cell=self.coordinates_matrix[req.to_row][req.to_col]#if checker moved, free cell
+            
+            #get to cell is empty
+            if to_cell.checker_name is None:
+                #save name in cell
+                to_cell.checker_name=checker_model_name
+                #clear previous position
+                from_cell.checker_name=None
+                #place checker object in the to position
+                return ComputerMoveCheckerResponse(True)
+            else:
+                rospy.loginfo("tragte cell has already a piece "+to_cell.cell_name)
+                return ComputerMoveCheckerResponse(False)
+        else:
+            rospy.loginfo("there isn't a checker in cell "+from_cell.cell_name)
+            return ComputerMoveCheckerResponse(False)
+
+
+
+
     def handle_reset_game(self,req):
         """
         Service that reset the game

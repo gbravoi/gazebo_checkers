@@ -1,4 +1,5 @@
 <launch>
+<!--Note: no test different clients, do rosrun of the client examples in a different terminal-->
     <arg name="gui" default="true"/> <!--include gazebo?-->
 
 

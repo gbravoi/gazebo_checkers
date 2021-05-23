@@ -34,6 +34,15 @@ def move_checkers_client(from_row,from_col,to_row,to_col):
     except rospy.ServiceException as e:
         print("Service call failed: %s"%e)
 
+def human_moved_checker_client(from_row,from_col,to_row,to_col):
+    rospy.wait_for_service('checkers/human_move/')
+    try:
+        human_move = rospy.ServiceProxy('checkers/human_move/', ComputerMoveChecker)
+        resp = human_move(from_row,from_col,to_row,to_col)
+        return resp.success
+    except rospy.ServiceException as e:
+        print("Service call failed: %s"%e)
+
 def remove_checker_client(from_row,from_col):
     rospy.wait_for_service('checkers/remove_piece/')
     try:

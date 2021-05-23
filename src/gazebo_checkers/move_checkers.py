@@ -4,11 +4,11 @@ Code contain functions to
 -Set in gazebo board in initial state
 -Keep track of position of checker in gazebo
 ---Move automatically checkers (computer movements)
----Reset board for a new game
----Keep track of position of the checker moved by user? (This may not be needed)
+---Reset board for a new game (could be a custom board)
+---Keep track of position of the checker moved by computer and user
+---Delete checkers
+---Transform checker in king
 
-Notes:
---When user human, keep track here of board, or send it as parameter (requires modify functions)
 """
 import rospy
 import rospkg
@@ -67,6 +67,8 @@ class Board(object):
         ##START SERVICES
         #start service that move checker positions (when computer is playing)
         self.computer_moves_service=rospy.Service('checkers/computer_move/', ComputerMoveChecker, self.handle_computer_moves)
+        #update board representation when human moved a checker
+        self.human_moves_service=rospy.Service('checkers/human_move/', ComputerMoveChecker, self.handle_human_moves)
         #start service to reset the game
         self.reset_game_service=rospy.Service('checkers/reset_game/', ResetGame, self.handle_reset_game)
         #delete a piece

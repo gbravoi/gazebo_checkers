@@ -47,7 +47,6 @@ class Board(object):
         ##INFO TO FILL DURING INITIALIZATION
         #detect if is debuf mode
         # Robot limits
-        self.debug_mode = rospy.get_param("~debug", False)    # Debug model will load only one checker. Parameter passed in the launch file
         #matrix with cell objects. cell objects store info like position in real world and checker in it
         self.coordinates_matrix=np.zeros((self.board_squares_side,self.board_squares_side), dtype=object) 
         self.blue_checkers_model_names=[]#array to keep all the names of the chekers, completed on the first callback
@@ -99,31 +98,22 @@ class Board(object):
         spawn 12 checkers per side.
         re-spawn deleted checkers.
         """
-        #create chekers, only 1 blue for debug
-        if self.debug_mode:
-            i=1
+        #cretae all checkers
+        for i in range(blue):#blue
             #create a blue checker
-            model_name='blue_demo'
+            model_name=self.blue_xml+'_'+str(i)
             if model_name not in self.blue_checkers_model_names:
                 self.blue_checkers_model_names.append(model_name)#save name of the model
             if model_name not in self.checkers_in_game:#try to spawn only if the checker is missing
                 self.spawn_model(self.blue_xml,model_name)
-        else: #else, cretae all checkers
-            for i in range(blue):#blue
-                #create a blue checker
-                model_name=self.blue_xml+'_'+str(i)
-                if model_name not in self.blue_checkers_model_names:
-                    self.blue_checkers_model_names.append(model_name)#save name of the model
-                if model_name not in self.checkers_in_game:#try to spawn only if the checker is missing
-                    self.spawn_model(self.blue_xml,model_name)
-            
-            for i in range(red):#RED
-                #create a red checker
-                model_name=self.red_xml+'_'+str(i)
-                if model_name not in self.red_checkers_model_names:
-                    self.red_checkers_model_names.append(model_name)#save name of the model
-                if model_name not in self.checkers_in_game:#try to spawn only if the checker is missing
-                    self.spawn_model(self.red_xml,model_name)
+        
+        for i in range(red):#RED
+            #create a red checker
+            model_name=self.red_xml+'_'+str(i)
+            if model_name not in self.red_checkers_model_names:
+                self.red_checkers_model_names.append(model_name)#save name of the model
+            if model_name not in self.checkers_in_game:#try to spawn only if the checker is missing
+                self.spawn_model(self.red_xml,model_name)
 
 
 
@@ -212,56 +202,48 @@ class Board(object):
 
 
       
-        if self.debug_mode:
-            #place only blue one for debuggingchecker_model_name=self.blue_checkers_model_names[blue_checker_counter]
-            #move checker using 
-            checker_model_name=self.blue_checkers_model_names[0]
-            target_cell=self.coordinates_matrix[0][3]#d8
-            print("target_cell")
-            print(target_cell)
-            result=self.set_checkers_position(checker_model_name,target_cell)
-        else:
-            red_checker_counter=0
-            blue_checker_counter=0
-            #go trhough all cell in the board
-            for i in range(self.board_squares_side):
-                for j in range(self.board_squares_side):
-                    target_cell=self.coordinates_matrix[i][j]
-                    #red
-                    if starting_board[i][j]==self.red_n and red_checker_counter<len(self.red_checkers_model_names): #if we have enought red checkers
-                        checker_model_name=self.red_checkers_model_names[red_checker_counter]
-                        #move cher using service
-                        result=self.set_checkers_position(checker_model_name,target_cell)
-                        #increase red_checker_counter
-                        red_checker_counter+=1
-                    #blue
-                    elif starting_board[i][j]==self.blue_n and blue_checker_counter<len(self.blue_checkers_model_names): #if we have enought blue checkers
-                        checker_model_name=self.blue_checkers_model_names[blue_checker_counter]
-                        #move checker using service
-                        result=self.set_checkers_position(checker_model_name,target_cell)
-                        #increase blue_checker_counter
-                        blue_checker_counter+=1
-                                        #red king
-                    elif starting_board[i][j]==self.red_king_n and red_checker_counter<len(self.red_checkers_model_names): #if we have enought red checkers
-                        checker_model_name=self.red_checkers_model_names[red_checker_counter]
-                        #move checker using service
-                        result=self.set_checkers_position(checker_model_name,target_cell)
-                        #transform in king
-                        result=self.gazebo_spawn_king(checker_model_name,target_cell)
-                        #increase red_checker_counter
-                        red_checker_counter+=1
-                    #blue king
-                    elif starting_board[i][j]==self.blue_king_n and blue_checker_counter<len(self.blue_checkers_model_names): #if we have enought red checkers
-                        checker_model_name=self.blue_checkers_model_names[blue_checker_counter]
-                        #move checker using service
-                        result=self.set_checkers_position(checker_model_name,target_cell)
-                        #transform in king
-                        result=self.gazebo_spawn_king(checker_model_name,target_cell)
-                        #increase blue_checker_counter
-                        blue_checker_counter+=1
-                    else:
-                        #no checker in this cell
-                        target_cell.checker_name=None
+
+        red_checker_counter=0
+        blue_checker_counter=0
+        #go trhough all cell in the board
+        for i in range(self.board_squares_side):
+            for j in range(self.board_squares_side):
+                target_cell=self.coordinates_matrix[i][j]
+                #red
+                if starting_board[i][j]==self.red_n and red_checker_counter<len(self.red_checkers_model_names): #if we have enought red checkers
+                    checker_model_name=self.red_checkers_model_names[red_checker_counter]
+                    #move cher using service
+                    result=self.set_checkers_position(checker_model_name,target_cell)
+                    #increase red_checker_counter
+                    red_checker_counter+=1
+                #blue
+                elif starting_board[i][j]==self.blue_n and blue_checker_counter<len(self.blue_checkers_model_names): #if we have enought blue checkers
+                    checker_model_name=self.blue_checkers_model_names[blue_checker_counter]
+                    #move checker using service
+                    result=self.set_checkers_position(checker_model_name,target_cell)
+                    #increase blue_checker_counter
+                    blue_checker_counter+=1
+                                    #red king
+                elif starting_board[i][j]==self.red_king_n and red_checker_counter<len(self.red_checkers_model_names): #if we have enought red checkers
+                    checker_model_name=self.red_checkers_model_names[red_checker_counter]
+                    #move checker using service
+                    result=self.set_checkers_position(checker_model_name,target_cell)
+                    #transform in king
+                    result=self.gazebo_spawn_king(checker_model_name,target_cell)
+                    #increase red_checker_counter
+                    red_checker_counter+=1
+                #blue king
+                elif starting_board[i][j]==self.blue_king_n and blue_checker_counter<len(self.blue_checkers_model_names): #if we have enought red checkers
+                    checker_model_name=self.blue_checkers_model_names[blue_checker_counter]
+                    #move checker using service
+                    result=self.set_checkers_position(checker_model_name,target_cell)
+                    #transform in king
+                    result=self.gazebo_spawn_king(checker_model_name,target_cell)
+                    #increase blue_checker_counter
+                    blue_checker_counter+=1
+                else:
+                    #no checker in this cell
+                    target_cell.checker_name=None
 
 
 

@@ -21,7 +21,7 @@ from gazebo_checkers.srv import ComputerMoveChecker, ComputerMoveCheckerResponse
 from scipy.spatial.transform import Rotation as R #to peform rotations
 
 class Board(object):
-    def __init__(self,square_size_mm,board_squares_side,board_origin_to_surface,empty,red,blue,red_king,blue_king,initial_board=None):
+    def __init__(self,square_size_mm,board_squares_side,board_origin_to_surface,empty,red,blue,red_king,blue_king,red_xml,blue_xml,red_king_xml,blue_king_xml,initial_board=None):
         ##BOARD PROPERTIES
         #origin in center of the board
         self.square_size=square_size_mm
@@ -31,11 +31,11 @@ class Board(object):
         self.board_pose=None #this will be filled by checkers_state_subscriber on the first callback
         #checker info
         self.red_name='red_checker' #name given in sdf file of checkers_game. with numbers from 1 to 12
-        self.red_xml='red_checker' 
-        self.red_king_xml='red_checker_king'
+        self.red_xml=red_xml #name of the xml folder in gazebo (gazebo/checkers/models)
+        self.red_king_xml=red_king_xml
         self.blue_name='blue_checker'
-        self.blue_xml='blue_checker'
-        self.blue_king_xml='blue_checker_king'
+        self.blue_xml=blue_xml
+        self.blue_king_xml=blue_king_xml
       
         #id to constructr matrix that represent position of different things. Used to comunicate with other checker programs
         self.empty_n=empty
@@ -621,6 +621,14 @@ if __name__ == '__main__':
     board_origin_to_surface=float(rospy.get_param("~board_origin_to_surface_mm", 0.003) ) #distance from origin (reference frame) of board t its surface (z direction)
     initial_board_txt=rospy.get_param("~initial_board_txt",None)
     initial_board_package_location=rospy.get_param("~initial_board_package_location","gazebo_checkers")
+
+    #name of the xml models to use
+    red_xml=rospy.get_param("~red_xml","red_checker")
+    red_king_xml=rospy.get_param("~red_king_xml","red_checker_king")
+    blue_xml=rospy.get_param("~blue_xml","blue_checker")
+    blue_king_xml=rospy.get_param("~blue_king_xml","blue_checker_king")
+    
+
     #numbers to represent board as a numerical matrix. keep this numbers. do not change. coincident with Constants in checker_probabilites/base.py
     empty=0
     red=1
@@ -635,7 +643,7 @@ if __name__ == '__main__':
 
         
 
-    board=Board(square_size_mm,board_squares_side,board_origin_to_surface,empty,red,blue,red_king,blue_king,initial_board)
+    board=Board(square_size_mm,board_squares_side,board_origin_to_surface,empty,red,blue,red_king,blue_king,red_xml,blue_xml,red_king_xml,blue_king_xml,initial_board)
 
     # spin() simply keeps python from exiting until this node is stopped
     rospy.spin()

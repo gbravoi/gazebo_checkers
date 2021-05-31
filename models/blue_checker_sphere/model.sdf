@@ -1,0 +1,57 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <model name="Blue_Checker">
+    <static>false</static>
+    <link name="blue_checker">
+      <pose>0 0 0.02 0 0 0</pose>
+      <collision name="collision">
+        <geometry>
+            <sphere>
+              <radius>.04</radius>
+            </sphere>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>1.0</mu>
+              <mu2>1.0</mu2>
+            </ode>
+          </friction>
+          <contact>
+            <ode>
+              <!--max_vel>0</max_vel-->
+              <min_depth>0.001</min_depth>
+            </ode>
+          </contact>
+        </surface>
+      </collision>
+      <visual name="visual">
+        <cast_shadows>false</cast_shadows>
+        <geometry>
+            <sphere>
+              <radius>.04</radius>
+            </sphere>
+        </geometry>
+        <material>
+        <script>
+            <uri>file://media/materials/scripts/gazebo.material</uri>
+            <name>Gazebo/Blue</name>
+        </script>
+        </material> 
+      </visual>
+     <inertial>
+        <mass>0.021</mass>
+        <inertia> 
+          <ixx>0.000002</ixx>       
+          <ixy>0.0</ixy>         
+          <ixz>0.0</ixz>        
+          <iyy>0.000002</iyy>       
+          <iyz>0.0</iyz>         
+          <izz>0.000002</izz>       
+        </inertia>
+      </inertial>
+    </link>
+  </model>
+
+
+</sdf>
